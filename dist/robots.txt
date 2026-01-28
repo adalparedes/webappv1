@@ -1,0 +1,9 @@
+# https://www.robotstxt.org/robotstxt.html
+User-agent: *
+Allow: /
+
+# Exclude sensitive auth or internal API paths if they were exposed
+Disallow: /api/
+Disallow: /auth/
+
+Sitemap: https://adalparedes.com/sitemap.xml

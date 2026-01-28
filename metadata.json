@@ -1,0 +1,8 @@
+{
+  "name": "Adal Paredes AI Portal",
+  "description": "Portal IT de alto rendimiento especializado en IA, Cripto y Desarrollo Web. Live Version.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
