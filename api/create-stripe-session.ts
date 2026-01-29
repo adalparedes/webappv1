@@ -16,13 +16,21 @@ const PRICING_PLANS = [
   { id: 'PREMIUM', name: 'Plan Rey / Reina', price_usd: 99.00 }
 ];
 
-// TODO: Migrar a una tabla 'products' en Supabase para mayor escalabilidad.
+// FIX: Se crea una fuente de verdad local para los paquetes de créditos.
+// Esto soluciona el error de "Paquete no encontrado" al eliminar la consulta a Supabase,
+// que fallaba por políticas de RLS en el entorno del servidor.
+const CREDIT_PACKS = [
+  { code: 'mini_boost', name: 'Mini Boost', price_usd: 4.97 },
+  { code: 'carga_media', name: 'Carga Media', price_usd: 9.97 },
+  { code: 'pro_boost', name: 'Pro Boost', price_usd: 19.97 },
+  { code: 'legend_boost', name: 'Legend Boost', price_usd: 49.97 },
+];
+
 const PHYSICAL_PRODUCTS = [
   { id: 'p1', name: 'Hacker Hoodie V2', price: 59.99 },
   { id: 'p2', name: 'AP Tech Cap', price: 24.99 },
 ];
 
-// TODO: Migrar a una tabla 'services' en Supabase para gestionar precios dinámicamente.
 const SERVICES: Record<string, { name: string, price_usd: number }> = {
   'SVC_WEB/APP_DEVELOPMENT': { name: 'Web/App Development', price_usd: 1500 },
   'SVC_TECH_CONSULTATION': { name: 'Tech Consultation', price_usd: 150 },
@@ -112,23 +120,15 @@ export default async function handler(req: Request) {
           productName = plan.name;
           break;
         case 'credit_pack':
-          // Prioriza la obtención de precios desde la DB para mayor seguridad y flexibilidad
-          // FIX: Se usa .ilike() para una búsqueda sin distinción de mayúsculas/minúsculas,
-          // resolviendo errores si el 'code' en la DB (ej. 'MINI_BOOST') no coincide exactamente con el enviado ('mini_boost').
-          // También se añade manejo de errores para la consulta a Supabase.
-          const { data: dbPack, error: packFetchError } = await supabase
-              .from('credit_packs')
-              .select('price_usd, name')
-              .ilike('code', sku) // Case-insensitive match
-              .single();
-          
-          if (packFetchError || !dbPack) {
-            console.error(`[STRIPE_SESSION_ERROR] No se pudo encontrar el paquete de créditos con código '${sku}'. Error de Supabase:`, packFetchError?.message);
-            throw new Error(`Paquete de créditos inválido o no encontrado en DB: ${sku}`);
+          // FIX: Se reemplaza la consulta a Supabase por una búsqueda en la constante local.
+          // Esto resuelve el error de RLS y asegura que el precio es verificado por el servidor.
+          const pack = CREDIT_PACKS.find(p => p.code.toLowerCase() === sku.toLowerCase());
+          if (!pack) {
+            console.error(`[STRIPE_SESSION_ERROR] Paquete de créditos inválido o no encontrado en la configuración local: ${sku}`);
+            throw new Error(`Paquete de créditos inválido o no encontrado: ${sku}`);
           }
-          
-          serverPrice = dbPack.price_usd;
-          productName = dbPack.name;
+          serverPrice = pack.price_usd;
+          productName = pack.name;
           break;
         case 'physical_product':
           const product = PHYSICAL_PRODUCTS.find(p => p.id === sku);
