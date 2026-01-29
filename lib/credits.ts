@@ -1,4 +1,3 @@
-
 import { supabase } from './supabaseClient';
 
 export interface CreditPack {
@@ -35,10 +34,11 @@ export async function processSuccessfulTransaction(
 
   try {
     // 1. Obtener la fuente de verdad del paquete de créditos directamente de la DB
+    // FIX: Se usa .ilike() para una búsqueda de paquete sin distinción de mayúsculas/minúsculas.
     const { data: pack, error: packError } = await supabase
       .from('credit_packs')
       .select('credits, price_usd, name')
-      .eq('code', packCode)
+      .ilike('code', packCode)
       .single();
 
     if (packError || !pack) {
@@ -119,13 +119,14 @@ export async function applyCreditPack(
     }
 
     // Para métodos manuales o asíncronos (Wire/SPEI), registramos como 'pending'
-    const { data: pack } = await supabase
+    // FIX: Se usa .ilike() para una búsqueda de paquete sin distinción de mayúsculas/minúsculas y se añade manejo de errores.
+    const { data: pack, error: packFetchError } = await supabase
       .from('credit_packs')
       .select('credits, price_usd')
-      .eq('code', packCode)
+      .ilike('code', packCode)
       .single();
 
-    if (!pack) throw new Error('Nodo de paquete no encontrado en el sistema.');
+    if (packFetchError || !pack) throw new Error('Nodo de paquete no encontrado en el sistema.');
 
     const { error: txError } = await supabase
       .from('credit_transactions')

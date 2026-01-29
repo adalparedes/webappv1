@@ -113,8 +113,20 @@ export default async function handler(req: Request) {
           break;
         case 'credit_pack':
           // Prioriza la obtención de precios desde la DB para mayor seguridad y flexibilidad
-          const { data: dbPack } = await supabase.from('credit_packs').select('price_usd, name').eq('code', sku).single();
-          if (!dbPack) throw new Error(`Paquete de créditos inválido o no encontrado en DB: ${sku}`);
+          // FIX: Se usa .ilike() para una búsqueda sin distinción de mayúsculas/minúsculas,
+          // resolviendo errores si el 'code' en la DB (ej. 'MINI_BOOST') no coincide exactamente con el enviado ('mini_boost').
+          // También se añade manejo de errores para la consulta a Supabase.
+          const { data: dbPack, error: packFetchError } = await supabase
+              .from('credit_packs')
+              .select('price_usd, name')
+              .ilike('code', sku) // Case-insensitive match
+              .single();
+          
+          if (packFetchError || !dbPack) {
+            console.error(`[STRIPE_SESSION_ERROR] No se pudo encontrar el paquete de créditos con código '${sku}'. Error de Supabase:`, packFetchError?.message);
+            throw new Error(`Paquete de créditos inválido o no encontrado en DB: ${sku}`);
+          }
+          
           serverPrice = dbPack.price_usd;
           productName = dbPack.name;
           break;
