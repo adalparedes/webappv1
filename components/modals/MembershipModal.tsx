@@ -7,9 +7,10 @@ import { createNowPaymentsInvoice } from '../../lib/nowpayments';
 interface MembershipModalProps {
   onClose: () => void;
   currentBalance: number;
+  onOpenModal: (type: string) => void;
 }
 
-const MembershipModal: React.FC<MembershipModalProps> = ({ onClose, currentBalance }) => {
+const MembershipModal: React.FC<MembershipModalProps> = ({ onClose, currentBalance, onOpenModal }) => {
   const { user, session, refreshProfile } = useAuth();
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<string | null>(null);
@@ -174,7 +175,7 @@ const MembershipModal: React.FC<MembershipModalProps> = ({ onClose, currentBalan
         <div className="lg:col-span-3 space-y-6">
           <div className="flex items-center gap-2 px-1">
             <span className="w-1.5 h-1.5 bg-[#00d2ff] rounded-full animate-pulse"></span>
-            <h3 className="text-[10px] font-mono text-gray-500 uppercase tracking-widest">1. Seleccionar Nivel de Enlace</h3>
+            <h3 className="text-[10px] font-mono text-gray-500 uppercase tracking-widest">1. Seleccionar Nivel de Membresía</h3>
           </div>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -269,7 +270,7 @@ const MembershipModal: React.FC<MembershipModalProps> = ({ onClose, currentBalan
               </button>
 
               <button onClick={() => setPaymentMethod('crypto')} className={`w-full p-4 rounded-2xl border text-left flex items-center justify-between group transition-all ${paymentMethod === 'crypto' ? 'border-[#f7931a] bg-[#f7931a]/10' : 'border-white/5 bg-black/40 hover:border-white/20'}`}>
-                <div className="flex flex-col"><span className="text-[10px] uppercase font-bold text-white">Criptomonedas (Blockchain)</span><span className="text-[8px] uppercase text-[#f7931a] font-mono font-bold animate-pulse">-15% REWARD</span></div>
+                <div className="flex flex-col"><span className="text-[10px] uppercase font-bold text-white">Bitcoin - Crypto</span><span className="text-[8px] uppercase text-[#f7931a] font-mono font-bold animate-pulse">-15% DE DESCUENTO</span></div>
                 <span className="text-xl">₿</span>
               </button>
 
@@ -313,7 +314,9 @@ const MembershipModal: React.FC<MembershipModalProps> = ({ onClose, currentBalan
                 <div className={`mt-0.5 w-4 h-4 rounded border flex items-center justify-center transition-all ${termsAccepted ? 'bg-[#00ff88] border-[#00ff88]' : 'border-white/20 bg-black group-hover:border-[#00ff88]/50'}`}>
                   {termsAccepted && <span className="text-black text-[10px] font-bold">✓</span>}
                 </div>
-                <span className="text-[9px] uppercase text-gray-500 font-mono leading-tight select-none">Confirmar upgrade y aceptar protocolos.</span>
+                <span className="text-[9px] uppercase text-gray-500 font-mono leading-tight select-none">
+                  Acepto los <button type="button" onClick={(e) => { e.stopPropagation(); onOpenModal('terms'); }} className="underline bg-transparent border-none p-0 m-0 align-baseline font-inherit text-white hover:text-[#00d2ff] cursor-pointer">términos y condiciones</button>
+                </span>
               </div>
               
               <button 

@@ -7,7 +7,7 @@ interface TopBarProps {
   user: User;
   onOpenProfile: () => void;
   onOpenBalance: () => void;
-  onOpenProductPayment: () => void;
+  onOpenCart: () => void;
   onToggleSidebar?: () => void;
   timezone?: string;
   onOpenModal: (type: string) => void;
@@ -17,7 +17,7 @@ const TopBar: React.FC<TopBarProps> = ({
   user, 
   onOpenProfile, 
   onOpenBalance,
-  onOpenProductPayment,
+  onOpenCart,
   onToggleSidebar,
   timezone = 'America/Mexico_City',
   onOpenModal
@@ -106,7 +106,7 @@ const TopBar: React.FC<TopBarProps> = ({
           </button>
 
           <button 
-            onClick={onOpenProductPayment} 
+            onClick={onOpenCart} 
             className={`relative p-2.5 md:p-3 rounded-lg md:rounded-2xl transition-all border ${itemCount > 0 ? 'border-[#00ff88]/50 bg-[#00ff88]/10 text-[#00ff88]' : 'border-white/10 bg-white/5 text-gray-500 hover:text-white'}`}
           >
             <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24" className="md:w-5 md:h-5">

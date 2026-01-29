@@ -1,8 +1,6 @@
-
 import React, { useState, useEffect } from 'react';
 import ModalContainer from './ModalContainer';
 import { useCart } from '../../context/CartContext';
-import ProductPayment from './ProductPayment';
 import LoadBalance from './LoadBalance';
 import { supabase } from '../../lib/supabaseClient';
 import { CreditPack } from '../../lib/credits';
@@ -13,11 +11,11 @@ const PHYSICAL_PRODUCTS = [
 ];
 
 const OnlineStore: React.FC<{ onClose: () => void }> = ({ onClose }) => {
-  const { addItem, items, total } = useCart();
+  const { addItem } = useCart();
   const [creditPacks, setCreditPacks] = useState<CreditPack[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showPayment, setShowPayment] = useState(false);
   const [showLoadBalance, setShowLoadBalance] = useState(false);
+  const [addedProductId, setAddedProductId] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchPacks = async () => {
@@ -35,30 +33,23 @@ const OnlineStore: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     fetchPacks();
   }, []);
 
-  const handlePurchase = (p: any) => {
-    if (p.type === 'service' || p.credits) {
-      // Si es un paquete de créditos, abrimos el modal especializado solicitado
-      setShowLoadBalance(true);
-    } else {
-      // Si es un producto físico, seguimos el flujo del carrito
-      addItem({
-        id: p.id,
-        name: p.name,
-        price: p.price,
-        image: p.img,
-        quantity: 1,
-        type: 'product'
-      });
-      setShowPayment(true);
-    }
+  const handleAddProductToCart = (p: any) => {
+    addItem({
+      id: p.id,
+      name: p.name,
+      price: p.price,
+      image: p.img,
+      quantity: 1,
+      type: 'product'
+    });
+    setAddedProductId(p.id);
+    setTimeout(() => {
+        setAddedProductId(null);
+    }, 2000);
   };
 
   if (showLoadBalance) {
     return <LoadBalance onClose={() => setShowLoadBalance(false)} />;
-  }
-
-  if (showPayment) { 
-    return <ProductPayment onClose={() => setShowPayment(false)} items={items} total={total} />; 
   }
 
   return (
@@ -89,7 +80,7 @@ const OnlineStore: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                   <div className="text-lg md:text-2xl font-orbitron font-bold text-white mb-auto relative z-10">${pack.price_usd}</div>
                   
                   <button 
-                    onClick={() => handlePurchase({...pack, id: pack.code, type: 'service', img: '💎', price: pack.price_usd})}
+                    onClick={() => setShowLoadBalance(true)}
                     className="w-full py-3 md:py-4 bg-[#00ff88] text-black text-[9px] md:text-[10px] font-orbitron font-bold rounded-xl transition-all uppercase tracking-[0.1em] md:tracking-[0.2em] shadow-[0_5px_15px_rgba(0,255,136,0.3)] hover:scale-[1.05] active:scale-95 relative z-10 mt-3"
                   >
                     Seleccionar
@@ -120,10 +111,10 @@ const OnlineStore: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                   <span className="text-[8px] md:text-[10px] text-gray-600 line-through font-mono tracking-tighter">${p.originalPrice}</span>
                 </div>
                 <button 
-                  onClick={() => handlePurchase(p)}
-                  className="w-full py-3 md:py-4 bg-white/5 border border-white/10 text-white text-[9px] md:text-[10px] font-orbitron font-bold rounded-xl md:rounded-2xl hover:bg-[#00ff88] hover:text-black transition-all uppercase tracking-widest"
+                  onClick={() => handleAddProductToCart(p)}
+                  className={`w-full py-3 md:py-4 text-[9px] md:text-[10px] font-orbitron font-bold rounded-xl md:rounded-2xl transition-all uppercase tracking-widest ${addedProductId === p.id ? 'bg-[#00ff88] text-black' : 'bg-white/5 border border-white/10 text-white hover:bg-[#00ff88] hover:text-black'}`}
                 >
-                  Agregar y Pagar
+                  {addedProductId === p.id ? '¡Añadido!' : 'Agregar al Carrito'}
                 </button>
               </div>
             ))}

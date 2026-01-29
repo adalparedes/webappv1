@@ -7,6 +7,7 @@ import BottomNav from './BottomNav';
 import SystemHUD from './SystemHUD';
 import { useAuth } from '../../context/AuthContext';
 import { chatService, getConversationLimit } from '../../lib/chatService';
+import { useCart } from '../../context/CartContext';
 
 // Define a type for the AI configuration to ensure type safety
 interface AiConfig {
@@ -22,6 +23,8 @@ interface AiConfig {
 // Performance Boost: Lazy load all modals to reduce initial bundle size.
 const LoadBalance = lazy(() => import('../modals/LoadBalance'));
 const OnlineStore = lazy(() => import('../modals/OnlineStore'));
+const CartDrawer = lazy(() => import('../modals/CartDrawer'));
+const ProductPayment = lazy(() => import('../modals/ProductPayment'));
 const OtherServices = lazy(() => import('../modals/OtherServices'));
 const UserProfile = lazy(() => import('../modals/UserProfile'));
 const PersonalizationModal = lazy(() => import('../modals/PersonalizationModal'));
@@ -33,6 +36,7 @@ const VipVaultModal = lazy(() => import('../modals/VipVaultModal'));
 const CoreHubModal = lazy(() => import('../modals/CoreHubModal'));
 const NotificationsModal = lazy(() => import('../modals/NotificationsModal'));
 const LogoutConfirm = lazy(() => import('../modals/LogoutConfirm'));
+const TermsModal = lazy(() => import('../modals/TermsModal'));
 
 // Simple loader for Suspense fallback
 const ModalLoader: React.FC = () => (
@@ -121,6 +125,7 @@ const getEndpointForModel = (model: string): string => {
 
 const Dashboard: React.FC<{ user: User; onLogout: () => void }> = ({ user, onLogout }) => {
   const { session, isAdmin, signOut, refreshProfile } = useAuth();
+  const { items, total, itemCount } = useCart();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [isTyping, setIsTyping] = useState(false);
@@ -164,6 +169,10 @@ const Dashboard: React.FC<{ user: User; onLogout: () => void }> = ({ user, onLog
 
   const lastMessageTime = useRef<number>(0);
   const MESSAGE_COOLDOWN_MS = 2500;
+  
+  const handleOpenCart = () => {
+    setActiveModal('cart');
+  };
 
   const loadHistory = useCallback(async () => {
     if (!session?.user?.id) return;
@@ -412,7 +421,7 @@ const Dashboard: React.FC<{ user: User; onLogout: () => void }> = ({ user, onLog
           user={user} 
           onOpenProfile={() => setActiveModal('profile')} 
           onOpenBalance={() => setActiveModal('balance')} 
-          onOpenProductPayment={() => setActiveModal('store')} 
+          onOpenCart={handleOpenCart} 
           onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} 
           timezone={aiConfig.timezone}
           onOpenModal={setActiveModal}
@@ -478,18 +487,21 @@ const Dashboard: React.FC<{ user: User; onLogout: () => void }> = ({ user, onLog
       </div>
 
       <Suspense fallback={<ModalLoader />}>
+        {activeModal === 'cart' && <CartDrawer onClose={() => setActiveModal(null)} onCheckout={() => setActiveModal('product_payment')} />}
+        {activeModal === 'product_payment' && <ProductPayment items={items} total={total} onClose={() => setActiveModal(null)} />}
         {activeModal === 'logout' && <LogoutConfirm onConfirm={onLogout} onCancel={() => setActiveModal(null)} />}
-        {activeModal === 'balance' && <LoadBalance onClose={() => setActiveModal(null)} />}
+        {activeModal === 'balance' && <LoadBalance onClose={() => setActiveModal(null)} onOpenModal={setActiveModal} />}
         {activeModal === 'store' && <OnlineStore onClose={() => setActiveModal(null)} />}
         {activeModal === 'services' && <OtherServices onClose={() => setActiveModal(null)} />}
         {activeModal === 'profile' && <UserProfile user={user} onClose={() => setActiveModal(null)} />}
         {activeModal === 'personalization' && <PersonalizationModal config={aiConfig} onClose={() => setActiveModal(null)} onSave={setAiConfig} />}
         {activeModal === 'settings' && <SettingsModal config={aiConfig} onClose={() => setActiveModal(null)} onSave={setAiConfig} />}
-        {activeModal === 'membership' && <MembershipModal currentBalance={user.balance} onClose={() => setActiveModal(null)} />}
+        {activeModal === 'membership' && <MembershipModal currentBalance={user.balance} onClose={() => setActiveModal(null)} onOpenModal={setActiveModal} />}
         {activeModal === 'tools' && <ToolsModal user={user} onClose={() => setActiveModal(null)} onUpgrade={() => setActiveModal('membership')} />}
         {activeModal === 'vip_vault' && <VipVaultModal user={user} onClose={() => setActiveModal(null)} onUpgrade={() => setActiveModal('membership')} />}
         {activeModal === 'core_hub' && <CoreHubModal user={user} onClose={() => setActiveModal(null)} onOpenModal={setActiveModal} lastMessage={lastMessageContent} />}
         {activeModal === 'notifications' && <NotificationsModal onClose={() => setActiveModal(null)} />}
+        {activeModal === 'terms' && <TermsModal onClose={() => setActiveModal(null)} />}
         {['news', 'crypto', 'tutorials', 'humor'].includes(activeModal || '') && <ContentModal type={activeModal!} onClose={() => setActiveModal(null)} />}
       </Suspense>
     </div>

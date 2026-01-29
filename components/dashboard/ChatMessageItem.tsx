@@ -33,7 +33,7 @@ const ChatMessageItem: React.FC<ChatMessageItemProps> = ({ msg, isLastMessage, i
                     </div>
                 )}
                 
-                <div className={`text-sm md:text-base whitespace-pre-wrap leading-relaxed ${isError ? 'text-red-300 font-mono' : ''}`}>
+                <div className={`text-sm md:text-base whitespace-pre-wrap leading-relaxed ${isError ? 'text-red-300 font-mono' : isUser ? '' : 'font-ubuntu'}`}>
                     {msg.content || "Sincronizando..."}
                     {isTyping && isLastMessage && msg.role === 'assistant' && (
                         <span className="inline-block w-2 h-5 ml-1 animate-pulse align-middle" style={{ backgroundColor: msgStyle.color }}></span>

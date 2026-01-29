@@ -45,10 +45,10 @@ export default async function handler(req: Request) {
 
     const { GoogleGenAI } = await import('@google/genai');
     
-    // FIX: The project is configured to use GEMINI_API_KEY, not a generic API_KEY.
-    const apiKey = process.env.GEMINI_API_KEY;
+    // @google/genai coding guidelines fix: Use process.env.API_KEY
+    const apiKey = process.env.API_KEY;
     if (!apiKey) {
-      const errorMessage = `La API key para 'gemini' no está configurada. Agrega la variable de entorno GEMINI_API_KEY en Vercel.`;
+      const errorMessage = `La API key para 'gemini' no está configurada. Agrega la variable de entorno API_KEY en Vercel.`;
       return new Response(JSON.stringify({ error: 'API_KEY_MISSING', message: errorMessage }), { status: 500 });
     }
     

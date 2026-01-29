@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useCart } from '../../context/CartContext';
 
@@ -8,7 +7,7 @@ interface CartDrawerProps {
 }
 
 const CartDrawer: React.FC<CartDrawerProps> = ({ onClose, onCheckout }) => {
-  const { items, removeItem, total, itemCount } = useCart();
+  const { items, removeItem, updateItemQuantity, total, itemCount } = useCart();
 
   return (
     <div className="fixed inset-0 z-[150] flex justify-end animate-in fade-in duration-300">
@@ -45,25 +44,45 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ onClose, onCheckout }) => {
             </div>
           ) : (
             items.map((item) => (
-              <div key={item.id} className="flex items-center gap-4 p-3 bg-white/5 border border-white/5 rounded-2xl group hover:border-[#00ff88]/30 transition-all">
-                <div className="w-16 h-16 bg-black rounded-xl flex items-center justify-center text-3xl border border-white/5">
+              <div key={item.id} className="flex items-start gap-4 p-3 bg-white/5 border border-white/5 rounded-2xl group hover:border-[#00ff88]/30 transition-all">
+                <div className="w-16 h-16 bg-black rounded-xl flex items-center justify-center text-3xl border border-white/5 shrink-0">
                   {item.image}
                 </div>
                 <div className="flex-1 min-w-0">
                   <h4 className="text-xs font-bold text-white uppercase truncate">{item.name}</h4>
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className="text-[11px] font-mono text-[#00ff88]">${item.price.toFixed(2)}</span>
-                    <span className="text-[9px] text-gray-600 font-mono">x{item.quantity}</span>
+                  <p className="text-[11px] font-mono text-[#00ff88] mt-1">${item.price.toFixed(2)}</p>
+                  
+                  {/* Quantity Controls */}
+                  <div className="mt-2 flex items-center gap-2">
+                    <div className="flex items-center border border-white/10 rounded-lg">
+                      <button 
+                        onClick={() => updateItemQuantity(item.id, item.quantity - 1)}
+                        className="px-2 py-1 text-gray-400 hover:text-white transition-colors"
+                      >
+                        -
+                      </button>
+                      <span className="px-2 text-xs font-mono text-white">{item.quantity}</span>
+                      <button 
+                        onClick={() => updateItemQuantity(item.id, item.quantity + 1)}
+                        className="px-2 py-1 text-gray-400 hover:text-white transition-colors"
+                      >
+                        +
+                      </button>
+                    </div>
+                    <button 
+                      onClick={() => removeItem(item.id)}
+                      className="p-1.5 text-gray-600 hover:text-red-500 transition-colors"
+                      aria-label={`Eliminar ${item.name}`}
+                    >
+                      <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                        <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
                   </div>
                 </div>
-                <button 
-                  onClick={() => removeItem(item.id)}
-                  className="p-2 text-gray-700 hover:text-red-500 transition-colors"
-                >
-                  <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                    <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                  </svg>
-                </button>
+                <div className="text-right">
+                  <p className="text-sm font-mono font-bold text-white">${(item.price * item.quantity).toFixed(2)}</p>
+                </div>
               </div>
             ))
           )}
@@ -90,7 +109,10 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ onClose, onCheckout }) => {
             </div>
 
             <button 
-              onClick={onCheckout}
+              onClick={() => {
+                onCheckout();
+                onClose();
+              }}
               className="w-full py-5 bg-[#00ff88] text-black font-orbitron font-bold text-xs tracking-[0.2em] rounded-2xl hover:bg-white hover:scale-[1.02] active:scale-95 transition-all shadow-[0_0_30px_rgba(0,255,136,0.3)] uppercase"
             >
               Iniciar Pago Seguro

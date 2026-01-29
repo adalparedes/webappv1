@@ -83,12 +83,17 @@ const AuthModule: React.FC<AuthModuleProps> = ({ onAuthSuccess }) => {
     }
   };
 
-  const getThemeColor = () => isForgotPassword ? '#a855f7' : (isLogin ? '#00d2ff' : '#00ff88');
+  const getThemeColor = () => isForgotPassword ? '#a855f7' : '#00ff88';
 
   return (
     <div className="w-full max-w-md mx-auto p-4 animate-in fade-in duration-500">
       <div className="relative overflow-hidden bg-black/90 backdrop-blur-2xl border border-white/10 rounded-3xl p-8 shadow-2xl">
-        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-current to-transparent" style={{ color: getThemeColor() }}></div>
+        
+        {isForgotPassword ? (
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-current to-transparent" style={{ color: getThemeColor() }}></div>
+        ) : (
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#00ff88] to-[#00d2ff] animate-auth-glow-bar"></div>
+        )}
         
         <div className="text-center mb-8">
           <h2 className="text-2xl font-orbitron font-bold tracking-widest uppercase text-white">
@@ -142,7 +147,11 @@ const AuthModule: React.FC<AuthModuleProps> = ({ onAuthSuccess }) => {
             </div>
           )}
 
-          <button disabled={loading} className="w-full py-4 rounded-xl font-orbitron font-bold text-[11px] uppercase tracking-widest transition-all shadow-lg active:scale-95 flex items-center justify-center gap-3" style={{ backgroundColor: getThemeColor(), color: '#000' }}>
+          <button 
+            disabled={loading} 
+            className={`w-full py-4 rounded-xl font-orbitron font-bold text-[11px] uppercase tracking-widest transition-all active:scale-95 flex items-center justify-center gap-3 ${!isForgotPassword ? 'animate-auth-glow-button' : 'shadow-lg'}`}
+            style={{ backgroundColor: getThemeColor(), color: '#000' }}
+          >
             {loading ? 'SINCRONIZANDO...' : (isForgotPassword ? 'ENVIAR LINK' : (isLogin ? 'INICIAR SESIÓN' : 'CREAR CUENTA'))}
           </button>
         </form>
@@ -165,6 +174,26 @@ const AuthModule: React.FC<AuthModuleProps> = ({ onAuthSuccess }) => {
           )}
         </div>
       </div>
+      
+      <style>{`
+        @keyframes auth-glow-bar {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+        .animate-auth-glow-bar {
+          background-size: 200% 200%;
+          animation: auth-glow-bar 4s ease infinite;
+        }
+
+        @keyframes auth-glow-pulse {
+          0%, 100% { box-shadow: 0 0 20px #00ff88; }
+          50% { box-shadow: 0 0 35px #00ff88; }
+        }
+        .animate-auth-glow-button {
+          animation: auth-glow-pulse 2.5s infinite ease-in-out;
+        }
+      `}</style>
     </div>
   );
 };

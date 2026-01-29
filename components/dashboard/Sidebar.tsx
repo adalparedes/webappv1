@@ -46,7 +46,6 @@ const Sidebar: React.FC<SidebarProps> = ({
   const handleDelete = async (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
     
-    // Rate Limiting
     const now = Date.now();
     if (now - deleteCooldown.current < DELETE_COOLDOWN_MS) {
         alert("Comandos de purga demasiado rápidos.");
@@ -55,8 +54,8 @@ const Sidebar: React.FC<SidebarProps> = ({
 
     if (!session?.user?.id || deletingId) return;
 
-    if (window.confirm("¿Confirmas la purga permanente de este historial?")) {
-      deleteCooldown.current = now; // Registrar el intento de borrado
+    if (window.confirm("¿Estás seguro de que quieres eliminar esta conversación? Esta acción no se puede deshacer.")) {
+      deleteCooldown.current = now;
       setDeletingId(id);
       try {
         await chatService.deleteConversation(session.user.id, id);
@@ -129,7 +128,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           </div>
 
           <div className="flex-1 flex flex-col min-h-[200px]">
-            <p className="px-2 text-[8px] font-mono text-gray-600 uppercase tracking-[0.2em] mb-2">Memoria de Comandos</p>
+            <p className="px-2 text-[8px] font-mono text-gray-600 uppercase tracking-[0.2em] mb-2">Memoria de Conversaciones</p>
             <div className="space-y-1 overflow-y-auto custom-scrollbar flex-1 pr-1">
               {conversations.map(conv => (
                 <div key={conv.id} className="group/item relative">
