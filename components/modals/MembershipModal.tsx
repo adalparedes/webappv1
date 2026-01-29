@@ -281,12 +281,28 @@ const MembershipModal: React.FC<MembershipModalProps> = ({ onClose, currentBalan
                 </button>
                 {paymentMethod === 'bank_usa' && (
                   <div className="p-4 bg-black border border-[#00d2ff]/30 rounded-xl space-y-3 animate-in slide-in-from-top-2">
-                     {[ { l: 'Titular', v: 'Adalberto Paredes Gutierrez' }, { l: 'Banco', v: 'Lead Bank' }, { l: 'Cuenta', v: '214595020057' }, { l: 'ACH', v: '101019644' }].map(i => (
-                       <div key={i.l} className="flex justify-between items-center text-[9px] font-mono">
-                         <span className="text-gray-500 uppercase">{i.l}:</span>
-                         <button onClick={() => copyToClipboard(i.v, i.l)} className="text-white hover:text-[#00d2ff] font-bold">{copiedField === i.l ? 'COPIADO' : i.v}</button>
-                       </div>
-                     ))}
+                    {[
+                      { l: 'Titular', v: 'Adalberto Paredes Gutierrez', copy: false },
+                      { l: 'Banco', v: 'Lead Bank', copy: false },
+                      { l: 'Cuenta', v: '214595020057', copy: true },
+                      { l: 'ACH', v: '101019644', copy: true }
+                    ].map(i => (
+                      <div key={i.l} className="flex justify-between items-center text-[9px] font-mono">
+                        <span className="text-gray-500 uppercase">{i.l}:</span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-white font-bold">{i.v}</span>
+                          {i.copy && (
+                            <button
+                              onClick={() => copyToClipboard(i.v, i.l)}
+                              className="text-gray-500 hover:text-[#00d2ff] transition-colors text-sm"
+                              title={`Copiar ${i.l}`}
+                            >
+                              {copiedField === i.l ? '✅' : '📋'}
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 )}
               </div>
@@ -298,12 +314,27 @@ const MembershipModal: React.FC<MembershipModalProps> = ({ onClose, currentBalan
                 </button>
                 {paymentMethod === 'bank_mxn' && (
                   <div className="p-4 bg-black border border-[#00ff88]/30 rounded-xl space-y-3 animate-in slide-in-from-top-2">
-                     {[ { l: 'Beneficiario', v: 'Adalberto Paredes Gutierrez' }, { l: 'CLABE', v: '6381 8000 0113 7662 19' }, { l: 'Banco', v: 'NU MÉXICO' } ].map(i => (
-                       <div key={i.l} className="flex justify-between items-center text-[9px] font-mono">
-                         <span className="text-gray-500 uppercase">{i.l}:</span>
-                         <button onClick={() => copyToClipboard(i.v, i.l)} className="text-white hover:text-[#00ff88] font-bold">{copiedField === i.l ? 'COPIADO' : i.v}</button>
-                       </div>
-                     ))}
+                    {[
+                      { l: 'Beneficiario', v: 'Adalberto Paredes Gutierrez', copy: false },
+                      { l: 'CLABE', v: '6381 8000 0113 7662 19', copy: true },
+                      { l: 'Banco', v: 'NU MÉXICO', copy: false }
+                    ].map(i => (
+                      <div key={i.l} className="flex justify-between items-center text-[9px] font-mono">
+                        <span className="text-gray-500 uppercase">{i.l}:</span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-white font-bold">{i.v}</span>
+                          {i.copy && (
+                            <button
+                              onClick={() => copyToClipboard(i.v, i.l)}
+                              className="text-gray-500 hover:text-[#00ff88] transition-colors text-sm"
+                              title={`Copiar ${i.l}`}
+                            >
+                              {copiedField === i.l ? '✅' : '📋'}
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 )}
               </div>
