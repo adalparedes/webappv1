@@ -169,13 +169,20 @@ const Dashboard: React.FC<{ user: User; onLogout: () => void }> = ({ user, onLog
     try {
       const limit = getConversationLimit(user.membership, isAdmin);
       const convs = await chatService.fetchConversations(session.user.id, limit);
-      // OPTIMIZATION: Load conversations without messages initially
-      const mappedConvs = convs.map((c: any) => ({ 
-        id: c.id, 
-        title: c.title, 
-        messages: [] // Lazy load messages on selection
-      }));
-      setConversations(mappedConvs);
+      
+      // FIX: When reloading the conversation list (e.g., after a profile refresh),
+      // preserve the messages of conversations that are already loaded in the state.
+      // This prevents the active chat from being cleared unexpectedly.
+      setConversations(prevConvs => {
+        const existingMessagesMap = new Map(prevConvs.map(c => [c.id, c.messages]));
+        const newConvs = convs.map((dbConv: any) => ({
+          id: dbConv.id,
+          title: dbConv.title,
+          messages: existingMessagesMap.get(dbConv.id) || []
+        }));
+        return newConvs;
+      });
+
     } catch (e: any) { 
       if (e.message?.includes("SESIÓN_EXPIRADA")) signOut(); 
     }
