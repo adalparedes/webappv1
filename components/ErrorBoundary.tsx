@@ -9,22 +9,21 @@ interface State {
 }
 
 class ErrorBoundary extends React.Component<Props, State> {
-  // FIX: Replaced class property state initialization with a constructor to ensure compatibility
-  // and resolve the error where `this.props` was not being recognized.
+  // FIX: Using a constructor to initialize state. This can sometimes resolve type inference issues with 'this' in certain environments, ensuring `this.props` is correctly typed.
   constructor(props: Props) {
     super(props);
     this.state = { hasError: false };
   }
 
-  public static getDerivedStateFromError(_: Error): State {
+  static getDerivedStateFromError(_: Error): State {
     return { hasError: true };
   }
 
-  public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error("[CRITICAL_UI_ERROR]", error, errorInfo);
   }
 
-  public render() {
+  render() {
     if (this.state.hasError) {
       return (
         <div className="fixed inset-0 w-screen h-screen flex flex-col items-center justify-center bg-black text-white font-mono p-6 text-center z-[10000]">

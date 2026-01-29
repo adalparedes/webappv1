@@ -127,6 +127,7 @@ const Dashboard: React.FC<{ user: User; onLogout: () => void }> = ({ user, onLog
   const [activeModal, setActiveModal] = useState<string | null>(null);
   const [isLoadingMessages, setIsLoadingMessages] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isBottomNavOpen, setIsBottomNavOpen] = useState(false);
 
   const AI_CONFIG_KEY = `ai_config_${session?.user?.id || 'guest'}`;
 
@@ -387,6 +388,8 @@ const Dashboard: React.FC<{ user: User; onLogout: () => void }> = ({ user, onLog
 
   const activeConversation = conversations.find(c => c.id === activeId);
   const lastMessageContent = activeConversation?.messages[activeConversation.messages.length - 1]?.content;
+  
+  const HANDLE_HEIGHT_PX = 40;
 
   return (
     <div className="flex h-screen w-full bg-[#050505] overflow-hidden relative">
@@ -405,7 +408,15 @@ const Dashboard: React.FC<{ user: User; onLogout: () => void }> = ({ user, onLog
         }}
       />
       <div className="flex-1 flex flex-col min-w-0">
-        <TopBar user={user} onOpenProfile={() => setActiveModal('profile')} onOpenBalance={() => setActiveModal('balance')} onOpenProductPayment={() => setActiveModal('store')} onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} timezone={aiConfig.timezone} />
+        <TopBar 
+          user={user} 
+          onOpenProfile={() => setActiveModal('profile')} 
+          onOpenBalance={() => setActiveModal('balance')} 
+          onOpenProductPayment={() => setActiveModal('store')} 
+          onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} 
+          timezone={aiConfig.timezone}
+          onOpenModal={setActiveModal}
+        />
         <ChatWindow 
           user={user} 
           conversation={activeConversation} 
@@ -416,9 +427,54 @@ const Dashboard: React.FC<{ user: User; onLogout: () => void }> = ({ user, onLog
           selectedModel={aiConfig.selectedModel}
           onSelectModel={handleModelChange}
           preferredLanguage={getLanguageCode(aiConfig.language)}
+          isBottomNavOpen={isBottomNavOpen}
         />
         <SystemHUD />
-        <BottomNav user={user} onOpenHistory={() => setIsSidebarOpen(true)} onOpenModal={setActiveModal} />
+      </div>
+
+      {/* --- Mobile Bottom Peeking Drawer --- */}
+      <div
+        className="md:hidden fixed bottom-0 left-0 w-full z-[90] pointer-events-auto bg-transparent transition-transform duration-300 ease-in-out"
+        style={{
+          transform: isBottomNavOpen ? 'translateY(0)' : `translateY(calc(100% - ${HANDLE_HEIGHT_PX}px))`,
+        }}
+      >
+        {/* Drawer Handle */}
+        <div
+          className="w-full flex justify-center cursor-pointer"
+          style={{ height: `${HANDLE_HEIGHT_PX}px` }}
+          onClick={() => setIsBottomNavOpen(!isBottomNavOpen)}
+        >
+          <div
+            className="bg-black/80 backdrop-blur-xl border-t border-x border-white/10 rounded-t-xl px-6 h-full flex items-center justify-center"
+            aria-label={isBottomNavOpen ? "Cerrar navegación" : "Abrir navegación"}
+          >
+            <svg
+              width="20"
+              height="20"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              viewBox="0 0 24 24"
+              className={`text-[#00d2ff] transition-transform duration-300 ${ isBottomNavOpen ? 'rotate-180' : 'rotate-0' }`}
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
+            </svg>
+          </div>
+        </div>
+  
+        {/* Drawer Content (The Nav) */}
+        <BottomNav
+          user={user}
+          onOpenModal={(modal) => {
+            setActiveModal(modal);
+            setIsBottomNavOpen(false);
+          }}
+          onOpenHistory={() => {
+            setIsSidebarOpen(true);
+            setIsBottomNavOpen(false);
+          }}
+        />
       </div>
 
       <Suspense fallback={<ModalLoader />}>

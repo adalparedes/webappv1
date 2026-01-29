@@ -1,6 +1,7 @@
 import React, { useState, useEffect, memo, useRef } from 'react';
 import { User } from '../../types';
 import { useCart } from '../../context/CartContext';
+import NotificationBell from './NotificationBell';
 
 interface TopBarProps {
   user: User;
@@ -9,6 +10,7 @@ interface TopBarProps {
   onOpenProductPayment: () => void;
   onToggleSidebar?: () => void;
   timezone?: string;
+  onOpenModal: (type: string) => void;
 }
 
 const TopBar: React.FC<TopBarProps> = ({ 
@@ -17,7 +19,8 @@ const TopBar: React.FC<TopBarProps> = ({
   onOpenBalance,
   onOpenProductPayment,
   onToggleSidebar,
-  timezone = 'America/Mexico_City'
+  timezone = 'America/Mexico_City',
+  onOpenModal
 }) => {
   const { itemCount } = useCart();
   const [currentTime, setCurrentTime] = useState('');
@@ -69,7 +72,7 @@ const TopBar: React.FC<TopBarProps> = ({
         </div>
 
         {/* CENTRO: SYSTEM HUD TIME (Optimizado para Tablet/Desktop) */}
-        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center text-center pointer-events-none select-none max-w-[120px] md:max-w-none transition-all duration-300">
+        <div className="absolute left-1/2 top-1/2 translate-x-[calc(-50%-2rem)] -translate-y-1/2 flex flex-col items-center text-center pointer-events-none select-none max-w-[120px] md:max-w-none transition-all duration-300">
              <div className="flex items-center gap-1.5 md:gap-2 mb-0.5">
                <span className="w-1 h-1 md:w-1.5 md:h-1.5 bg-[#00ff88] rounded-full animate-pulse shadow-[0_0_8px_#00ff88]"></span>
                <span className="text-[13px] md:text-lg font-orbitron font-bold text-white tracking-tighter tabular-nums">
@@ -104,7 +107,7 @@ const TopBar: React.FC<TopBarProps> = ({
 
           <button 
             onClick={onOpenProductPayment} 
-            className={`relative p-2 md:p-3 rounded-lg md:rounded-2xl transition-all border ${itemCount > 0 ? 'border-[#00ff88]/50 bg-[#00ff88]/10 text-[#00ff88]' : 'border-white/10 bg-white/5 text-gray-500 hover:text-white'}`}
+            className={`relative p-2.5 md:p-3 rounded-lg md:rounded-2xl transition-all border ${itemCount > 0 ? 'border-[#00ff88]/50 bg-[#00ff88]/10 text-[#00ff88]' : 'border-white/10 bg-white/5 text-gray-500 hover:text-white'}`}
           >
             <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24" className="md:w-5 md:h-5">
               <path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />

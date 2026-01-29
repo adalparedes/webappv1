@@ -12,6 +12,7 @@ interface ChatWindowProps {
   selectedModel: string;
   onSelectModel: (model: string) => void;
   preferredLanguage?: string;
+  isBottomNavOpen: boolean;
 }
 
 // Security Enhancement: Basic XSS prevention for filenames.
@@ -35,10 +36,12 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
   isLoadingHistory,
   selectedModel,
   onSelectModel,
-  preferredLanguage = 'es-MX'
+  preferredLanguage = 'es-MX',
+  isBottomNavOpen
 }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const photoInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   
   const [inputText, setInputText] = useState("");
@@ -97,6 +100,19 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
     recognition.start();
   };
 
+  const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (re) => {
+        const base64 = (re.target?.result as string).split(',')[1];
+        setAttachment({ data: base64, mimeType: file.type, name: file.name });
+      };
+      reader.readAsDataURL(file);
+    }
+    if (e.target) e.target.value = '';
+  }, []);
+
   const handleSpeakToggle = useCallback((text: string, msgId: string) => {
     if (playingMessageId === msgId) {
       window.speechSynthesis.cancel();
@@ -146,7 +162,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
 
   return (
     <div className="flex-1 flex flex-col min-w-0 bg-[#050505] h-full relative">
-      <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 md:p-8 space-y-8 custom-scrollbar scroll-smooth pb-32 md:pb-8">
+      <div ref={scrollRef} className={`flex-1 overflow-y-auto p-4 md:p-8 space-y-8 custom-scrollbar scroll-smooth transition-all duration-300 ${isBottomNavOpen ? 'pb-88' : 'pb-64'}`}>
         {isLoadingHistory ? (
           <div className="h-full flex flex-col items-center justify-center space-y-4">
             <div className="relative w-16 h-16">
@@ -187,7 +203,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
         )}
       </div>
 
-      <div className="absolute bottom-0 left-0 w-full p-4 md:p-6 bg-[#050505] z-40 border-t border-white/5 md:relative pb-[120px] md:pb-6">
+      <div className={`absolute left-0 w-full p-4 md:p-6 bg-transparent z-40 md:relative md:bottom-auto transition-all duration-300 ${isBottomNavOpen ? 'bottom-48' : 'bottom-28'}`}>
         <div className="max-w-4xl mx-auto space-y-3">
           <div className="flex items-center justify-between px-2">
              <div className="flex gap-2 overflow-x-auto no-scrollbar">
@@ -220,19 +236,13 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
             <button onClick={() => fileInputRef.current?.click()} className="p-3 mb-0.5 text-gray-500 hover:text-[#00d2ff] hover:bg-white/5 rounded-xl transition-all active:scale-90" title="Adjuntar Imagen/Archivo">
               <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.414a4 4 0 00-5.656-5.656l-6.415 6.414a6 6 0 108.486 8.486L20.5 13"/></svg>
             </button>
-            <input type="file" ref={fileInputRef} className="hidden" accept="image/*,application/pdf,text/plain" onChange={(e) => {
-                 const file = e.target.files?.[0];
-                 if (file) {
-                   const reader = new FileReader();
-                   reader.onload = (re) => {
-                     const base64 = (re.target?.result as string).split(',')[1];
-                     setAttachment({ data: base64, mimeType: file.type, name: file.name });
-                   };
-                   reader.readAsDataURL(file);
-                 }
-                 if (fileInputRef.current) fileInputRef.current.value = '';
-              }} 
-            />
+            <input type="file" ref={fileInputRef} className="hidden" accept="image/*,application/pdf,text/plain" onChange={handleFileChange} />
+            
+            <button onClick={() => photoInputRef.current?.click()} className="p-3 mb-0.5 text-gray-500 hover:text-[#00d2ff] hover:bg-white/5 rounded-xl transition-all active:scale-90" title="Tomar Foto">
+              <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            </button>
+            <input type="file" ref={photoInputRef} className="hidden" accept="image/*" capture="environment" onChange={handleFileChange} />
+
             <textarea ref={textareaRef} value={inputText} onChange={(e) => setInputText(e.target.value)} onKeyDown={handleKeyDown} placeholder={placeholder} rows={1} className="flex-1 bg-transparent border-none outline-none text-white text-sm py-3 px-1 placeholder:text-gray-600 font-medium resize-none max-h-[120px] custom-scrollbar" style={{ minHeight: '44px' }}/>
             {!inputText.trim() && !attachment ? (
                 <button onClick={toggleListening} className={`p-3 mb-0.5 rounded-xl transition-all active:scale-90 ${isListening ? 'bg-red-500/20 text-red-500 animate-pulse' : 'text-gray-500 hover:text-white hover:bg-white/5'}`} title="Dictado por Voz">
