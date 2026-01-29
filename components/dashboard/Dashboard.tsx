@@ -491,7 +491,7 @@ const Dashboard: React.FC<{ user: User; onLogout: () => void }> = ({ user, onLog
         {activeModal === 'product_payment' && <ProductPayment items={items} total={total} onClose={() => setActiveModal(null)} />}
         {activeModal === 'logout' && <LogoutConfirm onConfirm={onLogout} onCancel={() => setActiveModal(null)} />}
         {activeModal === 'balance' && <LoadBalance onClose={() => setActiveModal(null)} onOpenModal={setActiveModal} />}
-        {activeModal === 'store' && <OnlineStore onClose={() => setActiveModal(null)} />}
+        {activeModal === 'store' && <OnlineStore onClose={() => setActiveModal(null)} onOpenModal={setActiveModal} />}
         {activeModal === 'services' && <OtherServices onClose={() => setActiveModal(null)} />}
         {activeModal === 'profile' && <UserProfile user={user} onClose={() => setActiveModal(null)} />}
         {activeModal === 'personalization' && <PersonalizationModal config={aiConfig} onClose={() => setActiveModal(null)} onSave={setAiConfig} />}

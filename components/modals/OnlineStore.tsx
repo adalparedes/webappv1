@@ -10,7 +10,12 @@ const PHYSICAL_PRODUCTS = [
   { id: 'p2', name: 'AP Tech Cap', price: 24.99, originalPrice: 35.00, img: '🧢', desc: 'Edición limitada bordado cian.', stock: 12, type: 'product' as const },
 ];
 
-const OnlineStore: React.FC<{ onClose: () => void }> = ({ onClose }) => {
+interface OnlineStoreProps {
+  onClose: () => void;
+  onOpenModal: (type: string) => void;
+}
+
+const OnlineStore: React.FC<OnlineStoreProps> = ({ onClose, onOpenModal }) => {
   const { addItem } = useCart();
   const [creditPacks, setCreditPacks] = useState<CreditPack[]>([]);
   const [loading, setLoading] = useState(true);
@@ -49,7 +54,7 @@ const OnlineStore: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   };
 
   if (showLoadBalance) {
-    return <LoadBalance onClose={() => setShowLoadBalance(false)} />;
+    return <LoadBalance onClose={() => setShowLoadBalance(false)} onOpenModal={onOpenModal} />;
   }
 
   return (
